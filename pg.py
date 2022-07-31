@@ -24,5 +24,6 @@ def main():
     the_game_obj.build_scenegraph()
     the_game_obj.run()
 
+
 if __name__ == '__main__':
     main()
