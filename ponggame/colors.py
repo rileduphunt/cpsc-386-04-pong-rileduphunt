@@ -10,7 +10,9 @@
 #
 
 
-"""__init__ for ponggame module."""
+"""Contains color definitions for pygame."""
 
-
-__all__ = ['game', 'colors', 'scene']
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
