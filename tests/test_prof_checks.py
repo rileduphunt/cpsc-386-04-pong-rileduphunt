@@ -13,6 +13,7 @@
 """Tests the program using the professor's checks."""
 
 
+import sys
 import unittest
 import format_check
 import header_check
@@ -20,25 +21,33 @@ import lint_check
 
 class TestProfChecks(unittest.TestCase):
     """Test the program using the professor's checks."""
+
+    def setUp(self) -> None:
+        sys.argv.append('.')
+        sys.argv.append('ponggame')
+
     def test_header(self):
         """Checks headers."""
         try:
             header_check.main()
         except SystemExit as exception:
-            print(exception)
+            self.assertEqual(exception.code, 0)
 
     def test_lint(self):
         """Check linting"""
         try:
             lint_check.main()
         except SystemExit as exception:
-            print(exception)
+            self.assertEqual(exception.code, 0)
+
+
     def test_format(self):
         """Checks formatting"""
         try:
             format_check.main()
         except SystemExit as exception:
-            print(exception)
+            self.assertEqual(exception.code, 0)
+
 
 
 if __name__ == '__main__':
