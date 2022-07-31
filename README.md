@@ -4,6 +4,8 @@
 
 # Pong!
 
+![Flowchart](./assets/images/flowchart.jpg)
+
 In this exercise, we shall write a [Pong](https://en.wikipedia.org/wiki/Pong) style game. Pong was first released in 1972 and it was one of the first arcade video games. Pong is a table tennis (ping pong) themed video game.
 
 The game play occurs on a single screen or scene where two players control two virtual paddles or racquets. The ball in play is _bounced_ back to the opposing side when it intersects the paddle. The player must move their paddle such that it intersects the ball before the ball passes behind the paddle thus scoring a point of the opposing player. The game was traditionally played in a landscape orientation where one player is at the left extreme of the display and the other player is at the right extreme of the display. Their paddles can only travel up or down, never forward or backward. No other action is taken by the player to strike the ball other than to have the paddle intersect the ball.

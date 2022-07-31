@@ -20,7 +20,12 @@ import header_check
 import lint_check
 
 class TestProfChecks(unittest.TestCase):
-    """Test the program using the professor's checks."""
+    """
+    Test the program using the professor's checks.
+    Must add files from .actions to the sitepackages folder in
+    your virtual environment.
+    e.g. ln -s .actions/*.py env/lib/python3.0/site-packages/
+    """
 
     def setUp(self) -> None:
         sys.argv.append('.')
