@@ -1,4 +1,17 @@
+# Riley Hunt
+# CPSC 386-01
+# 2022-07-31
+# hunt4riley@csu.fullerton.edu
+# @rileduphunt
+#
+# Lab 04-00
+#
+# Module contains scene data structure.
+#
+
+
 """Contains the scene data structure"""
+from ponggame import colors
 import pygame
 
 class Scene:
@@ -6,7 +19,6 @@ class Scene:
         self._screen = screen
         self._background = pygame.Surface(self._screen.get_size())
         self._background.fill(background_color)
-        self._color = (0,0,255)
         self._is_valid = True
         self._frame_rate = 60
 
@@ -18,6 +30,11 @@ class Scene:
     def framerate(self):
         return self._frame_rate
 
+    @property
+    def next_scene(self) -> str:
+        """Returns the string key of the next scene."""
+        return ""
+
     def update(self):
         pass
 
@@ -27,13 +44,7 @@ class Scene:
             event.type == pygame.QUIT:
             self._is_valid = False
 
-    # def process_tick(self):
-    #     self._color = (0,100, (self._color[2]+1) % 255)
-
     def draw(self):
-        # surface = pygame.Surface(self._screen.get_size())
-        # surface.fill(self._color)
-        # self._screen.blit(surface, (0,0))
         self._screen.blit(self._background, (0,0))
 
 class TitleScene(Scene):
