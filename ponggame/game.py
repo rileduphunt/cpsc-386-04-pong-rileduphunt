@@ -13,16 +13,20 @@
 """This is the game!"""
 
 import pygame
-from ponggame.scene import TitleScene, GameScene
+from ponggame.scene import Scene, TitleScene, GameScene
 from ponggame import colors
+
 
 class Game:
     """This is the game class"""
-    def __init__(self, 
-        argv, 
-        window_width=800, 
-        window_height=800, 
-        window_title = "The bestest game ever!" ):
+
+    def __init__(
+        self,
+        argv,
+        window_width=800,
+        window_height=800,
+        window_title="The bestest game ever!",
+    ):
         """Initializer method for Game class"""
         print("Game is initializing")
         pygame.init()
@@ -30,36 +34,58 @@ class Game:
         self._clock = pygame.time.Clock()
         self._screen = pygame.display.set_mode(self._windowsize)
         self._title = window_title
+        self._args = argv
         pygame.display.set_caption(self._title)
-        # self._game_is_over = False
         if not pygame.font:
             print("Warning: fonts are disabled.")
         if not pygame.mixer:
             print("Warning: sound is disabled.")
-        
+        self._game_is_over = False
         self._scene_graph = None
-    
+        self.scene = None
+
     def build_scenegraph(self):
-        self._scene_graph = [
-            TitleScene(screen=self._screen, background_color=colors.RED, title="A title"),
-            TitleScene(screen=self._screen, background_color=colors.RED, title="1"),
-            TitleScene(screen=self._screen, background_color=colors.RED, title="2"),
-            GameScene(screen=self._screen, background_color=colors.BLUE)
+        self._scene_graph = {
+            'title': ['game'],
+            'game': ['leaderboard', 'name_entry', 'game'],
+            'name_entry': ['leaderboard'],
+            'leaderboard': ['title'],
+        }
+        scenes = {
+            TitleScene(self._screen, colors.RED, title="A title"): 'title',
+            GameScene(self._screen, colors.BLUE): 'game',
+            TitleScene(
+                self._screen, colors.RED, title="Name Entry"
+            ): 'name_entry',
+            TitleScene(
+                self._screen, colors.RED, title="Leaderboard"
+            ): 'leaderboard',
+        }
+        self._scenes = {}
+        for key in scenes:
+            self._scenes[key] = scenes[key]
+            self._scenes[scenes[key]] = key
+
+    def next_scene(self, scene: Scene):
+        """Returns the next scene"""
+        print("Next scene")
+        return self._scenes[
+            self._scene_graph[self._scenes[scene]][scene.result]
         ]
-        
 
     def run(self):
         """Main game loop"""
-        #while not self._game_is_over:
-        for scene in self._scene_graph:
+        scene = self._scenes['title']
+        while not self._game_is_over:
             while scene.is_valid:
                 for event in pygame.event.get():
                     scene.handle_event(event)
-                scene.update()
+                scene.update(self._clock.get_time())
                 scene.draw()
-                # scene.process_tick()
                 pygame.display.update()
                 self._clock.tick(scene.framerate)
+            scene = self.next_scene(scene)
+            scene.reset()
         print("You are out of scenes!")
         pygame.quit()
         return 0
