@@ -1,3 +1,6 @@
+# Git Submodules
+.gitmodules
+
 # Dropbox settings and caches
 .dropbox
 .dropbox.attr
@@ -152,7 +155,8 @@ DerivedData/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -797,7 +801,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
