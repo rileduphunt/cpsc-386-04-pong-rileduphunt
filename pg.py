@@ -22,7 +22,8 @@ def main():
     """Entry point of Pong game."""
     the_game_obj = game.Game(sys.argv)
     the_game_obj.build_scenegraph()
-    the_game_obj.run()
+    status = the_game_obj.run()
+    return status
 
 
 if __name__ == '__main__':
