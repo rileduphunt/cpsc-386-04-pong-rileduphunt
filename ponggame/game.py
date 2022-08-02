@@ -23,9 +23,9 @@ class Game:
     def __init__(
         self,
         argv,
+        window_title="Riley's Pong Game",
         window_width=800,
         window_height=800,
-        window_title="The bestest game ever!",
     ):
         """Initializer method for Game class"""
         print("Game is initializing")
@@ -40,6 +40,7 @@ class Game:
             print("Warning: fonts are disabled.")
         if not pygame.mixer:
             print("Warning: sound is disabled.")
+
         self._game_is_over = False
         self._scene_graph = None
         self.scene = None
@@ -49,7 +50,7 @@ class Game:
             'title': ['game'],
             'game': ['leaderboard', 'name_entry', 'game'],
             'name_entry': ['leaderboard'],
-            'leaderboard': ['title'],
+            'leaderboard': ['quit', 'title'],
         }
         scenes = {
             TitleScene(self._screen, colors.RED, title="A title"): 'title',
@@ -60,23 +61,27 @@ class Game:
             TitleScene(
                 self._screen, colors.RED, title="Leaderboard"
             ): 'leaderboard',
+            None: 'quit',
         }
         self._scenes = {}
         for key in scenes:
             self._scenes[key] = scenes[key]
             self._scenes[scenes[key]] = key
 
-    def next_scene(self, scene: Scene):
+    def next_scene(self, scene: Scene) -> Scene:
         """Returns the next scene"""
         print("Next scene")
         return self._scenes[
             self._scene_graph[self._scenes[scene]][scene.result]
         ]
 
+
     def run(self):
         """Main game loop"""
         scene = self._scenes['title']
+        self.load_assets()
         while not self._game_is_over:
+            scene.start()
             while scene.is_valid:
                 for event in pygame.event.get():
                     scene.handle_event(event)
@@ -84,8 +89,11 @@ class Game:
                 scene.draw()
                 pygame.display.update()
                 self._clock.tick(scene.framerate)
+            scene.stop()
             scene = self.next_scene(scene)
-            scene.reset()
+            if scene is None:
+                self._game_is_over = True
+
         print("You are out of scenes!")
         pygame.quit()
         return 0
