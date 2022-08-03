@@ -16,9 +16,11 @@
 from decimal import Decimal
 from os import environ
 from types import FunctionType
+
+from pygame.mixer import Sound
 from ponggame import colors, data_dir
 from typing import Dict, List, Protocol, Tuple, runtime_checkable
-from pygame import Rect, Vector2, Surface, font
+from pygame import Rect, Vector2, Surface, error, font
 from random import randrange
 import pygame.gfxdraw
 import pygame.draw
@@ -132,7 +134,10 @@ class Ball(Entity):
         self._velocity = Vector2(0, 0)
         self.radius = radius
         self.color = color
-        self.soundeffect = os.path.join(data_dir)
+        try:
+            self.collision_sound = Sound(os.path.join(data_dir, "sounds/collision.wav"))
+        except pygame.error as pygame_error:
+            print(pygame_error)
 
     def update(self, delta: float, environment):
         """Updates the ball each tick."""
@@ -175,6 +180,8 @@ class Ball(Entity):
         if isinstance(entity, Goal):
             self.stop()
         elif isinstance(entity, Collidable):
+            if self.collision_sound is not None:
+                self.collision_sound.play()
             self._velocity = self.reflect(entity)
         super().collide(delta, entity)
 
