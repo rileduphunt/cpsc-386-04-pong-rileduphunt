@@ -30,6 +30,7 @@ class TestProfChecks(unittest.TestCase):
     def setUp(self) -> None:
         sys.argv.append('.')
         sys.argv.append('ponggame')
+        sys.argv.append('ponggame/scene')
 
     def test_header(self):
         """Checks headers."""
