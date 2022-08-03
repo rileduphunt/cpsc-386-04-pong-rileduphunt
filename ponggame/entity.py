@@ -17,15 +17,33 @@ from decimal import Decimal
 from os import environ
 from types import FunctionType
 from ponggame import colors
-from typing import Dict, List, Protocol, Tuple
-from pygame import Rect, Vector2, Surface
+from typing import Dict, List, Protocol, Tuple, runtime_checkable
+from pygame import Rect, Vector2, Surface, font
 from random import randrange
 import pygame.gfxdraw
 import pygame.draw
 import os
 
 
-class Entity():
+@runtime_checkable
+class Collidable(Protocol):
+    @property
+    def collision_rect(self):
+        pass
+
+    @property
+    def lines(self) -> List[Tuple[Vector2, Vector2]]:
+        pass
+
+    @property
+    def normals(self) -> List[Vector2]:
+        pass
+
+    def collide(self, delta, entity):
+        pass
+
+
+class Entity:
     def __init__(self, position: Vector2, dimensions: Vector2) -> None:
         self._initial_position = Vector2(position)
         self._position = self._initial_position
@@ -125,7 +143,7 @@ class Ball(Entity):
             round(self._position.x),
             round(self._position.y),
             round(self.radius),
-            self.color
+            colors.BLACK
         )
         pygame.gfxdraw.filled_circle(
             surface,
@@ -140,7 +158,6 @@ class Ball(Entity):
         self._velocity = Vector2(25 / 60)
         self._velocity.rotate_ip(randrange(1, 90))
         self._velocity.rotate_ip(90 * randrange(4))
-        # self._velocity = Vector2(0, -25/60)
 
     def stop(self):
         self._velocity = self._velocity * 0
@@ -155,18 +172,9 @@ class Ball(Entity):
                 self._position -= self._velocity.normalize()
         if isinstance(entity, Goal):
             self.stop()
-        elif isinstance(entity, Entity):
+        elif isinstance(entity, Collidable):
             self._velocity = self.reflect(entity)
         super().collide(delta, entity)
-        # if isinstance(entity, Wall):
-        #     self._velocity.y = -self._velocity.y
-        # elif isinstance(entity, Paddle):
-        #     #normal = self.get_collision_normal()
-        #     self._velocity.x = -self._velocity.x
-        # elif isinstance(entity, Goal):
-        #     self.stop()
-        # else:
-        #     return
 
     def reflect(self, entity: Entity):
         """Reflect an entity off another entity."""
@@ -177,7 +185,7 @@ class Ball(Entity):
         relevant_normals: List[Vector2] = []
         # Step back now that we've got the points.
         self._position -= self._velocity.normalize()
-        normal_sum = Vector2(0,0)
+        normal_sum = Vector2(0, 0)
         for line, normal in lines_normals:
             if rect.clipline(line):
                 relevant_normals.append(line)
@@ -207,16 +215,16 @@ class Paddle(Entity):
         self._velocity = self._velocity + self._acceleration * delta
 
     def collide(self, delta, entity: Entity):
-        #super().collide(delta, entity)
         if self._velocity.length_squared() == 0:
             while self.collision_rect.colliderect(entity.collision_rect):
-                dir_center = (self._initial_position - self._position).normalize()
+                dir_center = (
+                    self._initial_position - self._position
+                ).normalize()
                 self._position += dir_center
         if isinstance(entity, Wall):
             self._velocity.y = 0
             self._acceleration.y = 0
-        else:
-            return
+        super().collide(delta, entity)
 
     def stop(self):
         self._velocity *= 0
@@ -228,5 +236,36 @@ class Goal(Entity):
         position = Vector2(rect.topleft) + (Vector2(rect.width, rect.height) // 2)
         super().__init__(position, Vector2(rect.width, rect.height))
 
-    # def collide(self, delta, entity):
-    #     super().collide(delta, entity)
+
+class TextDisplay(Entity):
+    """Displays text on the screen, and updates when the text is changed."""
+    def __init__(
+        self,
+        position: Vector2,
+        font: font.Font,
+        text: str,
+    ) -> None:
+        self.font = font
+        self._text: str = text
+        self._rendered = font.render(
+            self._text,
+            True,
+            colors.BLACK
+        )
+        super().__init__(position, Vector2(0, 0))
+
+    def draw(self, screen: Surface):
+        screen.blit(self._rendered, self._position)
+
+    @property
+    def text(self):
+        return self._text
+
+    @text.setter
+    def text(self, value):
+        self._text = value
+        self._rendered = self.font.render(
+            self._text,
+            True,
+            colors.BLACK
+        )
