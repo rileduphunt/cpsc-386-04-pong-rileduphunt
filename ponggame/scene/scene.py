@@ -11,6 +11,7 @@
 
 
 """Contains the scene data structure"""
+from pygame import key
 from ponggame import data_dir
 from ponggame.entity import Entity
 from types import FunctionType
@@ -46,12 +47,6 @@ class Scene:
             self._soundtrack = None
         self._is_soundtrack_on = True
 
-        def quit(event):
-            if event.key == pygame.K_ESCAPE:
-                self.invalidate()
-
-        self.add_listener(pygame.KEYDOWN, quit)
-
     @property
     def result(self):
         """Return the index indicating the next scene."""
@@ -83,14 +78,16 @@ class Scene:
             for listener in self._listeners[event.type]:
                 listener(event)
 
-    def add_listener(self, event: str, listener: FunctionType):
-        if event in self._listeners.keys():
-            self._listeners[event].append(listener)
+    def add_listener(self, event_type: int, listener: FunctionType):
+        if event_type in self._listeners.keys():
+            self._listeners[event_type].append(listener)
         else:
-            self._listeners[event] = [listener]
+            self._listeners[event_type] = [listener]
 
     def draw(self):
         self._screen.blit(self._background, (0, 0))
+        for entity in self._entities.values():
+            entity.draw(self._screen)
 
     def start(self):
         """Set up the scene before running it."""

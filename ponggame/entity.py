@@ -135,7 +135,9 @@ class Ball(Entity):
         self.radius = radius
         self.color = color
         try:
-            self.collision_sound = Sound(os.path.join(data_dir, "sounds/collision.wav"))
+            self.collision_sound = Sound(os.path.join(
+                data_dir, "sounds/collision.wav"
+            ))
         except pygame.error as pygame_error:
             print(pygame_error)
 
