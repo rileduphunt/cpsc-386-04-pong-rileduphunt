@@ -11,6 +11,7 @@
 
 
 """Contains the scene data structure"""
+from ponggame import data_dir
 from ponggame.entity import Entity
 from types import FunctionType
 from typing import Dict, List
@@ -39,8 +40,6 @@ class Scene:
         self._result = 0  # Go to the first output file in the graph.
         self._entities: Dict[str, Entity] = {}
 
-        main_dir = os.path.split(os.path.abspath(__file__))[0]
-        data_dir = os.path.join(main_dir, 'assets')
         if soundtrack:
             self._soundtrack = os.path.join(data_dir, soundtrack)
         else:

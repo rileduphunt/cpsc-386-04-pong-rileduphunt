@@ -12,5 +12,9 @@
 
 """__init__ for ponggame module."""
 
+import os
 
-__all__ = ['game', 'colors', 'scene']
+
+main_dir = os.path.split(os.path.abspath(__file__))[0]
+data_dir = os.path.join(main_dir, 'assets/')
+__all__ = ['game', 'colors', 'scene', 'data_dir']

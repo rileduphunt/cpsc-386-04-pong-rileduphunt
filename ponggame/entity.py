@@ -16,7 +16,7 @@
 from decimal import Decimal
 from os import environ
 from types import FunctionType
-from ponggame import colors
+from ponggame import colors, data_dir
 from typing import Dict, List, Protocol, Tuple, runtime_checkable
 from pygame import Rect, Vector2, Surface, font
 from random import randrange
@@ -132,8 +132,6 @@ class Ball(Entity):
         self._velocity = Vector2(0, 0)
         self.radius = radius
         self.color = color
-        main_dir = os.path.split(os.path.abspath(__file__))[0]
-        data_dir = os.path.join(main_dir, 'assets/')
         self.soundeffect = os.path.join(data_dir)
 
     def update(self, delta: float, environment):
