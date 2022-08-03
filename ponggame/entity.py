@@ -122,7 +122,12 @@ class Entity:
 class Ball(Entity):
     default_radius = 10
 
-    def __init__(self, position: Vector2, color: Tuple, radius=default_radius) -> None:
+    def __init__(
+        self,
+        position: Vector2,
+        color: Tuple,
+        radius=default_radius
+    ) -> None:
         super().__init__(position, Vector2(2 * radius, 2 * radius))
         self._velocity = Vector2(0, 0)
         self.radius = radius
@@ -130,7 +135,6 @@ class Ball(Entity):
         main_dir = os.path.split(os.path.abspath(__file__))[0]
         data_dir = os.path.join(main_dir, 'assets/')
         self.soundeffect = os.path.join(data_dir)
-
 
     def update(self, delta: float, environment):
         """Updates the ball each tick."""
@@ -198,7 +202,9 @@ class Ball(Entity):
 
 class Wall(Entity):
     def __init__(self, rect: Rect) -> None:
-        position = Vector2(rect.topleft) + (Vector2(rect.width, rect.height) // 2)
+        position = Vector2(rect.topleft) + (
+            Vector2(rect.width, rect.height) // 2
+        )
         super().__init__(position, Vector2(rect.width, rect.height))
 
 
@@ -233,7 +239,9 @@ class Paddle(Entity):
 
 class Goal(Entity):
     def __init__(self, rect: Rect) -> None:
-        position = Vector2(rect.topleft) + (Vector2(rect.width, rect.height) // 2)
+        position = Vector2(rect.topleft) + (
+            Vector2(rect.width, rect.height) // 2
+        )
         super().__init__(position, Vector2(rect.width, rect.height))
 
 
@@ -255,7 +263,13 @@ class TextDisplay(Entity):
         super().__init__(position, Vector2(0, 0))
 
     def draw(self, screen: Surface):
-        screen.blit(self._rendered, self._position)
+        screen.blit(
+            self._rendered,
+            self._position - Vector2(
+                self._rendered.get_width() / 2,
+                self._rendered.get_height() / 2
+                ),
+        )
 
     @property
     def text(self):
