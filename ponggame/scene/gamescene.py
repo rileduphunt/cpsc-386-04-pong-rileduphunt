@@ -6,12 +6,13 @@
 #
 # Lab 04-00
 #
-# Module contains scene data structure.
+# Contains gamescene data structure.
 #
 
 
 """Contains the scene data structure"""
 from os import error
+from ponggame.scene.scene import Scene
 from pygame import Rect, Surface
 from pygame.event import Event
 from ponggame.entity import Ball, Entity, Goal, Paddle, Wall
@@ -22,123 +23,7 @@ import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code
 from ponggame import colors
-
-
-class Scene:
-    """Base scene class that all other scene classes inherit from."""
-
-    def __init__(
-        self,
-        screen,
-        background_color,
-        soundtrack=None
-    ):
-
-        self._screen = screen
-        self._background = pygame.Surface(self._screen.get_size())
-        self._background.fill(background_color)
-        self._listeners: Dict[int, List[FunctionType]] = {}
-        self._is_valid = True
-        self._frame_rate = 60
-        self._result = 0  # Go to the first output file in the graph.
-        self._entities: Dict[str, Entity] = {}
-
-        main_dir = os.path.split(os.path.abspath(__file__))[0]
-        data_dir = os.path.join(main_dir, 'assets')
-        if soundtrack:
-            self._soundtrack = os.path.join(data_dir, soundtrack)
-        else:
-            self._soundtrack = None
-        self._is_soundtrack_on = True
-
-        def quit(event):
-            if event.key == pygame.K_ESCAPE:
-                self.invalidate()
-
-        self.add_listener(pygame.KEYDOWN, quit)
-
-    @property
-    def result(self):
-        """Return the index indicating the next scene."""
-        return 0
-
-    @property
-    def is_valid(self) -> bool:
-        """Returns true if the scene is currently valid."""
-        return self._is_valid
-
-    @property
-    def framerate(self):
-        return self._frame_rate
-
-    @property
-    def next_scene(self) -> str:
-        """Returns the string key of the next scene."""
-        raise NotImplementedError
-
-    def update(self, delta):
-        """Updates the game based on the time delta."""
-        pass
-
-    def invalidate(self):
-        self._is_valid = False
-
-    def handle_event(self, event):
-        if event.type in self._listeners:
-            for listener in self._listeners[event.type]:
-                listener(event)
-
-    def add_listener(self, event: str, listener: FunctionType):
-        if event in self._listeners.keys():
-            self._listeners[event].append(listener)
-        else:
-            self._listeners[event] = [listener]
-
-    def draw(self):
-        self._screen.blit(self._background, (0, 0))
-
-    def start(self):
-        """Set up the scene before running it."""
-        self._is_valid = True
-        if self._soundtrack:
-            try:
-                pygame.mixer.music.load(self._soundtrack)
-                pygame.mixer.music.set_volume(1.0)
-                pygame.mixer.music.play(-1, fade_ms=500)
-                pygame.mixer.music.play(-1)
-            except pygame.error as pygame_error:
-                print(f'Cannot open {self._soundtrack}')
-                print(pygame_error)
-
-    def stop(self):
-        """Stop the scene."""
-        if self._soundtrack:
-            pygame.mixer.music.stop()
-
-    def toggle_soundtrack(self):
-        self._is_soundtrack_on = not self._is_soundtrack_on
-        if not self._is_soundtrack_on:
-            pygame.mixer.music.pause()
-        else:
-            pygame.mixer.music.play()
-
-
-class TitleScene(Scene):
-    def __init__(self, screen, background_color, title):
-        super().__init__(screen, background_color=background_color)
-        self._title = title
-        (w, h) = self._screen.get_size()
-        title_font = pygame.font.Font(pygame.font.get_default_font(), 36)
-        self._rendered_title = title_font.render(
-            self._title, True, colors.BLACK
-        )
-        self._title_position = self._rendered_title.get_rect(
-            center=(w / 2, h / 2)
-        )
-
-    def draw(self):
-        super().draw()
-        self._screen.blit(self._rendered_title, self._title_position)
+from ponggame.scene.scene import Scene
 
 
 class GameScene(Scene):
@@ -150,17 +35,19 @@ class GameScene(Scene):
         ball_height = 25
         goal_width = 1
         goal_offset = ball_height * 2.5 + goal_width
+        self._player_score = 0
+        self._opponent_score = 0
         self._entities['ball'] = Ball((w/2, h/2), colors.WHITE)
         self._entities['topwall'] = Wall(Rect(0, 0, w, 10))
         self._entities['bottomwall'] = Wall(Rect(0, 790, w, 10))
         self._entities['player_goal'] = Goal(
             Rect(0 - goal_offset, -h, goal_width, h * 3)
         )
-        self._entities['enemy_goal'] = Goal(
+        self._entities['opponent_goal'] = Goal(
             Rect(w + goal_offset, -h, goal_width, h * 3)
         )
         self._entities['player_paddle'] = Paddle((30, h / 2))
-        self._entities['enemy_paddle'] = Paddle((w-30, h / 2))
+        self._entities['opponent_paddle'] = Paddle((w-30, h / 2))
 
         def paddle_move(event: Event):
             if event.key == pygame.K_UP:
@@ -193,6 +80,17 @@ class GameScene(Scene):
                 ball.reset()
                 ball.start()
 
+        def score_point(ball: Ball, delta: int, goal: Goal):
+            if ball is self._entities['ball'] and isinstance(goal, Goal):
+                if goal is self._entities['player_goal']:
+                    print("The opponent scores")
+                    self._opponent_score += 1
+                elif goal is self._entities['opponent_goal']:
+                    print("The player scores")
+                    self._player_score += 1
+                ball.reset()
+
+        self._entities['ball'].add_listener('collide', score_point)
         self.add_listener(pygame.KEYDOWN, restart)
         self.add_listener(pygame.KEYDOWN, paddle_move)
         self.add_listener(pygame.KEYUP, paddle_stop)

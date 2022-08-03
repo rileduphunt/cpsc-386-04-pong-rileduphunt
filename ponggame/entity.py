@@ -52,7 +52,7 @@ class Entity():
     def _dispatch_listeners(self, event, *args):
         if event in self._listeners.keys():
             for listener in self._listeners[event]:
-                listener(args)
+                listener(*args)
 
     @property
     def listeners(self):
@@ -98,7 +98,7 @@ class Entity():
         return lines
 
     def collide(self, delta, entity):
-        pass
+        self._dispatch_listeners('collide', self, delta, entity)
 
 
 class Ball(Entity):
@@ -157,6 +157,7 @@ class Ball(Entity):
             self.stop()
         elif isinstance(entity, Entity):
             self._velocity = self.reflect(entity)
+        super().collide(delta, entity)
         # if isinstance(entity, Wall):
         #     self._velocity.y = -self._velocity.y
         # elif isinstance(entity, Paddle):
@@ -206,6 +207,7 @@ class Paddle(Entity):
         self._velocity = self._velocity + self._acceleration * delta
 
     def collide(self, delta, entity: Entity):
+        #super().collide(delta, entity)
         if self._velocity.length_squared() == 0:
             while self.collision_rect.colliderect(entity.collision_rect):
                 dir_center = (self._initial_position - self._position).normalize()
@@ -226,5 +228,5 @@ class Goal(Entity):
         position = Vector2(rect.topleft) + (Vector2(rect.width, rect.height) // 2)
         super().__init__(position, Vector2(rect.width, rect.height))
 
-    def collide(self, delta, entity):
-        pass
+    # def collide(self, delta, entity):
+    #     super().collide(delta, entity)
