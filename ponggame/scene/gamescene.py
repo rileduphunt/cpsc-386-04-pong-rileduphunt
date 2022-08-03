@@ -15,10 +15,8 @@ from os import error
 from ponggame.scene.scene import Scene
 from pygame import Rect, Surface
 from pygame.event import Event
-from ponggame.entity import Ball, Entity, Goal, Paddle, Wall
-from types import FunctionType
+from ponggame.entity import Ball, Goal, Paddle, Wall
 from typing import Dict, List
-import os
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code

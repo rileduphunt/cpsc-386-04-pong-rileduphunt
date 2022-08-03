@@ -17,7 +17,6 @@ from pygame.event import Event
 from ponggame.entity import Ball, Entity, Goal, Paddle, Wall
 from types import FunctionType
 from typing import Dict, List
-import os
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code

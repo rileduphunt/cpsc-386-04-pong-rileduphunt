@@ -11,17 +11,13 @@
 
 
 """Contains the scene data structure"""
-from os import error
-from pygame import Rect, Surface
-from pygame.event import Event
-from ponggame.entity import Ball, Entity, Goal, Paddle, Wall
+from ponggame.entity import Entity
 from types import FunctionType
 from typing import Dict, List
 import os
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code
-from ponggame import colors
 
 
 class Scene:
