@@ -54,7 +54,7 @@ class Game:
         }
         scenes = {
             TitleScene(self._screen, colors.RED, title="A title"): 'title',
-            GameScene(self._screen, colors.BLUE): 'game',
+            GameScene(self._screen, colors.BLUE, soundtrack='sounds/interstellar-hero-02.wav'): 'game',
             TitleScene(
                 self._screen, colors.RED, title="Name Entry"
             ): 'name_entry',
@@ -75,11 +75,9 @@ class Game:
             self._scene_graph[self._scenes[scene]][scene.result]
         ]
 
-
     def run(self):
         """Main game loop"""
         scene = self._scenes['title']
-        self.load_assets()
         while not self._game_is_over:
             scene.start()
             while scene.is_valid:

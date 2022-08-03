@@ -11,13 +11,15 @@
 
 
 """Contains the scene data structure"""
+from os import error
 from pygame import Rect, Surface
 from pygame.event import Event
 from ponggame.entity import Ball, Entity, Goal, Paddle, Wall
 from types import FunctionType
 from typing import Dict, List
+import os
 import pygame
-from pygame.constants import KEYDOWN, K_ESCAPE
+from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code
 from ponggame import colors
 
@@ -25,21 +27,35 @@ from ponggame import colors
 class Scene:
     """Base scene class that all other scene classes inherit from."""
 
-    def __init__(self, screen, background_color):
+    def __init__(
+        self,
+        screen,
+        background_color,
+        soundtrack=None
+    ):
+
         self._screen = screen
         self._background = pygame.Surface(self._screen.get_size())
         self._background.fill(background_color)
-        self._registered_events: Dict[int, List[FunctionType]] = {}
+        self._listeners: Dict[int, List[FunctionType]] = {}
         self._is_valid = True
         self._frame_rate = 60
-        self._result = 0
+        self._result = 0  # Go to the first output file in the graph.
         self._entities: Dict[str, Entity] = {}
+
+        main_dir = os.path.split(os.path.abspath(__file__))[0]
+        data_dir = os.path.join(main_dir, 'assets')
+        if soundtrack:
+            self._soundtrack = os.path.join(data_dir, soundtrack)
+        else:
+            self._soundtrack = None
+        self._is_soundtrack_on = True
 
         def quit(event):
             if event.key == pygame.K_ESCAPE:
                 self.invalidate()
 
-        self.register_eventhandler(pygame.KEYDOWN, quit)
+        self.add_listener(pygame.KEYDOWN, quit)
 
     @property
     def result(self):
@@ -68,15 +84,15 @@ class Scene:
         self._is_valid = False
 
     def handle_event(self, event):
-        if event.type in self._registered_events:
-            for handler in self._registered_events[event.type]:
-                handler(event)
+        if event.type in self._listeners:
+            for listener in self._listeners[event.type]:
+                listener(event)
 
-    def register_eventhandler(self, event_type: int, handler: FunctionType):
-        if event_type in self._registered_events:
-            self._registered_events[event_type].append(handler)
+    def add_listener(self, event: str, listener: FunctionType):
+        if event in self._listeners.keys():
+            self._listeners[event].append(listener)
         else:
-            self._registered_events[event_type] = [handler]
+            self._listeners[event] = [listener]
 
     def draw(self):
         self._screen.blit(self._background, (0, 0))
@@ -84,10 +100,27 @@ class Scene:
     def start(self):
         """Set up the scene before running it."""
         self._is_valid = True
+        if self._soundtrack:
+            try:
+                pygame.mixer.music.load(self._soundtrack)
+                pygame.mixer.music.set_volume(1.0)
+                pygame.mixer.music.play(-1, fade_ms=500)
+                pygame.mixer.music.play(-1)
+            except pygame.error as pygame_error:
+                print(f'Cannot open {self._soundtrack}')
+                print(pygame_error)
 
     def stop(self):
         """Stop the scene."""
-        pass
+        if self._soundtrack:
+            pygame.mixer.music.stop()
+
+    def toggle_soundtrack(self):
+        self._is_soundtrack_on = not self._is_soundtrack_on
+        if not self._is_soundtrack_on:
+            pygame.mixer.music.pause()
+        else:
+            pygame.mixer.music.play()
 
 
 class TitleScene(Scene):
@@ -110,13 +143,14 @@ class TitleScene(Scene):
 
 class GameScene(Scene):
     """Scene that manages the actual game"""
-    def __init__(self, screen: Surface, background_color):
-        super().__init__(screen, background_color)
+    def __init__(self, screen: Surface, background_color, soundtrack):
+        super().__init__(screen, background_color, soundtrack)
+        self.gamespeed = 1
         w, h = screen.get_size()
         ball_height = 25
         goal_width = 1
-        goal_offset = ball_height*2.5 + goal_width
-        self._entities['ball'] = Ball((w/2, h/2), 25, colors.WHITE)
+        goal_offset = ball_height * 2.5 + goal_width
+        self._entities['ball'] = Ball((w/2, h/2), colors.WHITE)
         self._entities['topwall'] = Wall(Rect(0, 0, w, 10))
         self._entities['bottomwall'] = Wall(Rect(0, 790, w, 10))
         self._entities['player_goal'] = Goal(
@@ -130,9 +164,13 @@ class GameScene(Scene):
 
         def paddle_move(event: Event):
             if event.key == pygame.K_UP:
-                self._entities['player_paddle']._acceleration.y -= 1/60
+                self._entities['player_paddle']._acceleration.y = -1/60
             elif event.key == pygame.K_DOWN:
                 self._entities['player_paddle']._acceleration.y += 1/60
+            elif event.key == pygame.K_w:
+                self._entities['player_paddle']._acceleration.y = -1/60
+            elif event.key == pygame.K_s:
+                self._entities['player_paddle']._acceleration.y = 1/60
 
         def paddle_stop(event: Event):
             if event.key == pygame.K_UP:
@@ -141,17 +179,23 @@ class GameScene(Scene):
             elif event.key == pygame.K_DOWN:
                 self._entities['player_paddle']._velocity.y *= 0
                 self._entities['player_paddle']._acceleration *= 0
+            elif event.key == pygame.K_w:
+                self._entities['player_paddle']._velocity.y *= 0
+                self._entities['player_paddle']._acceleration *= 0
+            elif event.key == pygame.K_s:
+                self._entities['player_paddle']._velocity.y *= 0
+                self._entities['player_paddle']._acceleration *= 0
 
         def restart(event: Event):
             if event.key == pygame.K_SPACE:
                 ball = self._entities['ball']
-                if not ball.is_moving:
-                    ball.reset()
-                    ball.start()
+                # if not ball.is_moving:
+                ball.reset()
+                ball.start()
 
-        self.register_eventhandler(pygame.KEYDOWN, restart)
-        self.register_eventhandler(pygame.KEYDOWN, paddle_move)
-        self.register_eventhandler(pygame.KEYUP, paddle_stop)
+        self.add_listener(pygame.KEYDOWN, restart)
+        self.add_listener(pygame.KEYDOWN, paddle_move)
+        self.add_listener(pygame.KEYUP, paddle_stop)
 
     def update(self, delta):
         self.collide_entities(delta)
