@@ -114,6 +114,10 @@ class GameScene(Scene):
         self.collide_entities(delta)
         for name in self._entities:
             self._entities[name].update(delta, self._entities)
+        if self._player_score >= 3:
+            self.invalidate()
+        elif self._opponent_score >= 3:
+            self.invalidate()
 
     def draw(self):
         super().draw()
