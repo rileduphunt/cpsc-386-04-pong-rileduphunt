@@ -12,10 +12,12 @@
 
 """Contains the scene data structure"""
 from os import error
+
+from pygame.font import Font
 from ponggame.scene.scene import Scene
-from pygame import Rect, Surface
+from pygame import Rect, Surface, Vector2
 from pygame.event import Event
-from ponggame.entity import Ball, Goal, Paddle, Wall
+from ponggame.entity import Ball, Goal, Paddle, TextDisplay, Wall
 from typing import Dict, List
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
@@ -46,6 +48,14 @@ class GameScene(Scene):
         )
         self._entities['player_paddle'] = Paddle((30, h / 2))
         self._entities['opponent_paddle'] = Paddle((w-30, h / 2))
+        self._entities['player_score'] = TextDisplay(
+            position=Vector2(w, h) / 2,
+            font=Font(
+                pygame.font.get_default_font(),
+                35
+            ),
+            text="0"
+        )
 
         def paddle_move(event: Event):
             if event.key == pygame.K_UP:
@@ -74,7 +84,6 @@ class GameScene(Scene):
         def restart(event: Event):
             if event.key == pygame.K_SPACE:
                 ball = self._entities['ball']
-                # if not ball.is_moving:
                 ball.reset()
                 ball.start()
 
@@ -86,6 +95,7 @@ class GameScene(Scene):
                 elif goal is self._entities['opponent_goal']:
                     print("The player scores")
                     self._player_score += 1
+                self._entities['player_score'].text = str(self._player_score)
                 ball.reset()
 
         self._entities['ball'].add_listener('collide', score_point)
