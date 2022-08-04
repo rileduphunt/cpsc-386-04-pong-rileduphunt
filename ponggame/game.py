@@ -59,8 +59,8 @@ class Game:
                 soundtrack='sounds/interstellar-hero-02.wav'
             ): 'game',
             RetryScene(
-                self._screen, colors.RED, title="Name Entry"
-            ): 'name_entry',
+                self._screen
+            ): 'retry',
             None: 'quit',
         }
         self._scenes = {}
@@ -82,6 +82,9 @@ class Game:
             scene.start()
             while scene.is_valid:
                 for event in pygame.event.get():
+                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                        scene.invalidate()
+                        self._game_is_over = True
                     scene.handle_event(event)
                 scene.update(self._clock.get_time())
                 scene.draw()

@@ -11,7 +11,7 @@
 
 
 """Contains the scene data structure"""
-from pygame import key
+from pygame import Surface, key
 from ponggame import data_dir
 from ponggame.entity import Entity
 from types import FunctionType
@@ -32,7 +32,7 @@ class Scene:
         soundtrack=None
     ):
 
-        self._screen = screen
+        self._screen: Surface = screen
         self._background = pygame.Surface(self._screen.get_size())
         self._background.fill(background_color)
         self._listeners: Dict[int, List[FunctionType]] = {}
