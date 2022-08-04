@@ -12,7 +12,8 @@
 
 """Contains the scene data structure"""
 from os import error
-from pygame import Rect, Surface, Vector2
+import os
+from pygame import Rect, Surface, Vector2, draw
 from pygame.event import Event
 from ponggame.entity import Ball, Entity, Goal, Paddle, TextDisplay, Wall
 from types import FunctionType
@@ -20,7 +21,7 @@ from typing import Dict, List
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
 from pygame.key import key_code
-from ponggame import colors
+from ponggame import colors, data_dir
 from ponggame.scene.scene import Scene
 
 
@@ -30,13 +31,24 @@ class TitleScene(Scene):
         self._title = title
         (w, h) = self._screen.get_size()
         pos = Vector2(w / 2, h / 2)
-        font = pygame.font.Font(pygame.font.get_default_font(), 36)
-        text = ("HOW TO PLAY:\n"
-                "Control the left paddle with the up and down keys.\n"
-                "Try to keep the ball out of your opponent's goal.\n"
-                "The first player to score 3 points wins!\n")
-        self._entities['title'] = TextDisplay(pos, font, text)
+        # font = pygame.font.Font(pygame.font.get_default_font(), 36)
+        # text = ("HOW TO PLAY:\n"
+        #         "Control the left paddle with the up and down keys.\n"
+        #         "Try to keep the ball out of your opponent's goal.\n"
+        #         "The first player to score 3 points wins!\n")
+        # self._entities['title'] = TextDisplay(pos, font, text)
+        try:
+            self._image = pygame.image.load(
+                os.path.join(data_dir, 'images', 'titlescreen.png')
+            ).convert_alpha()
+        except error as e:
+            print("Could not load image!")
+
         self.add_listener(pygame.KEYDOWN, lambda event: self.invalidate())
+
+    def draw(self):
+        super().draw()
+        self._screen.blit(self._image, (0, 0))
 
     def handle_event(self, event):
         super().handle_event(event)
