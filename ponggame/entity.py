@@ -187,6 +187,7 @@ class Ball(Entity):
                 self.collision_sound.play()
             self._velocity = self.reflect(entity)
         super().collide(delta, entity)
+        self._velocity *= 1.01
 
     def reflect(self, entity: Entity):
         """Reflect an entity off another entity."""
@@ -259,20 +260,58 @@ class Paddle(Entity):
         self._velocity = self._velocity + self._acceleration * delta
 
     def collide(self, delta, entity: Entity):
-        if self._velocity.length_squared() == 0:
+        if isinstance(entity, Wall):
             while self.collision_rect.colliderect(entity.collision_rect):
                 dir_center = (
                     self._initial_position - self._position
                 ).normalize()
                 self._position += dir_center
-        if isinstance(entity, Wall):
-            self._velocity.y = 0
-            self._acceleration.y = 0
+            self.stop()
         super().collide(delta, entity)
+
+    def move_up(self):
+        self._acceleration.y = -1 / 60
+
+    def move_down(self):
+        self._acceleration.y = 1 / 60
 
     def stop(self):
         self._velocity *= 0
         self._acceleration *= 0
+        pass
+
+
+class AIPaddle(Paddle):
+    def __init__(self, position: Vector2) -> None:
+        super().__init__(position)
+        self._cooldown = 0  # Number of milliseconds between direction changes
+
+    def update(self, delta: float, environment: Dict[str, Entity]):
+        self._cooldown = max(0, self._cooldown-delta)
+        if self._cooldown == 0:
+            self.decide(environment)
+        super().update(delta, environment)
+
+    def move_up(self):
+        self._acceleration.y = -1 / 120
+
+    def move_down(self):
+        self._acceleration.y = 1 / 120
+
+    def decide(self, environment):
+        ball_pos: Vector2 = environment['ball']._position
+        if (self._position.y > ball_pos.y and self._velocity.y == 0):
+            self.move_up()
+        elif (self._position.y < ball_pos.y and self._velocity.y == 0):
+            self.move_down()
+        elif (ball_pos - self._position).dot(self._velocity) <= 0:
+            self.stop()
+            pass
+
+    def stop(self):
+        # Cooldown of around the human reaction time.
+        self._cooldown = randrange(150, 300)
+        super().stop()
 
 
 class Goal(Entity):
