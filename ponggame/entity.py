@@ -20,10 +20,11 @@ from types import FunctionType
 from pygame.mixer import Sound
 from ponggame import colors, data_dir
 from typing import Dict, List, Protocol, Tuple, runtime_checkable
-from pygame import Rect, Vector2, Surface, error, font
+from pygame import Rect, Vector2, Surface, error, font, USEREVENT
 from random import randrange
 import pygame.gfxdraw
 import pygame.draw
+import pygame.time
 import os
 
 
@@ -136,7 +137,7 @@ class Ball(Entity):
         self.color = color
         try:
             self.collision_sound = Sound(os.path.join(
-                data_dir, "sounds/collision.wav"
+                data_dir, "sounds", "collision.wav"
             ))
         except pygame.error as pygame_error:
             print(pygame_error)
@@ -202,6 +203,36 @@ class Ball(Entity):
                 relevant_normals.append(line)
                 normal_sum = normal_sum + normal
         return self._velocity.reflect(normal_sum)
+
+    def start_timer(self):
+        pygame.time.set_timer(
+            USEREVENT + 1,
+            millis=1000,
+            loops=1
+        )
+        pygame.time.set_timer(
+            USEREVENT + 2,
+            millis=2000,
+            loops=1
+        )
+        pygame.time.set_timer(
+            USEREVENT + 3,
+            millis=3000,
+            loops=1
+        )
+        pygame.time.set_timer(
+            USEREVENT + 4,
+            millis=4000,
+            loops=1
+        )
+        print("Start timer!")
+
+    def make_color(self, color):
+        """Returns a function that makes the object that color."""
+        def func(event):
+            print(color)
+            self.color = color
+        return func
 
     def reset(self):
         self._position = self._initial_position

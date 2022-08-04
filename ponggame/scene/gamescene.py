@@ -14,13 +14,14 @@
 from os import error
 
 from pygame.font import Font
+import ponggame
 from ponggame.scene.scene import Scene
 from pygame import Rect, Surface, Vector2
 from pygame.event import Event
 from ponggame.entity import Ball, Goal, Paddle, TextDisplay, Wall
 from typing import Dict, List
 import pygame
-from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS
+from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS, USEREVENT
 from pygame.key import key_code
 from ponggame import colors
 from ponggame.scene.scene import Scene
@@ -38,6 +39,7 @@ class GameScene(Scene):
         self._player_score = 0
         self._opponent_score = 0
         self._entities['ball'] = Ball((w/2, h/2), colors.WHITE)
+        ball = self._entities['ball']
         self._entities['topwall'] = Wall(Rect(0, 0, w, 10))
         self._entities['bottomwall'] = Wall(Rect(0, 790, w, 10))
         self._entities['player_goal'] = Goal(
@@ -86,13 +88,11 @@ class GameScene(Scene):
                 self._entities['player_paddle']._acceleration *= 0
 
         def restart(event: Event):
-            if event.key == pygame.K_SPACE:
-                ball = self._entities['ball']
-                ball.reset()
-                ball.start()
+            ball.reset()
+            ball.start()
 
         def score_point(ball: Ball, delta: int, goal: Goal):
-            if ball is self._entities['ball'] and isinstance(goal, Goal):
+            if ball is ball and isinstance(goal, Goal):
                 if goal is self._entities['player_goal']:
                     print("The opponent scores")
                     self._opponent_score += 1
@@ -104,9 +104,15 @@ class GameScene(Scene):
                     self._opponent_score
                     )
                 ball.reset()
+                ball.start_timer()
 
-        self._entities['ball'].add_listener('collide', score_point)
-        self.add_listener(pygame.KEYDOWN, restart)
+        self.add_listener(USEREVENT+1, ball.make_color(colors.RED))
+        self.add_listener(USEREVENT+2, ball.make_color(colors.YELLOW))
+        self.add_listener(USEREVENT+3, ball.make_color(colors.GREEN))
+        self.add_listener(USEREVENT+4, ball.make_color(colors.WHITE))
+
+        ball.add_listener('collide', score_point)
+        self.add_listener(USEREVENT+4, restart)
         self.add_listener(pygame.KEYDOWN, paddle_move)
         self.add_listener(pygame.KEYUP, paddle_stop)
 
@@ -139,3 +145,9 @@ class GameScene(Scene):
                 else:
                     pass
             checked.append(first)
+
+    def start(self):
+        super().start()
+        self._entities['ball'].start_timer()
+        self._player_score = 0
+        self._opponent_score = 0
