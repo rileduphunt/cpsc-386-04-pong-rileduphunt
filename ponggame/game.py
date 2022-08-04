@@ -82,7 +82,10 @@ class Game:
             scene.start()
             while scene.is_valid:
                 for event in pygame.event.get():
-                    if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                    if (
+                        event.type == pygame.KEYDOWN
+                        and event.key == pygame.K_ESCAPE
+                    ):
                         scene.invalidate()
                         self._game_is_over = True
                     scene.handle_event(event)
