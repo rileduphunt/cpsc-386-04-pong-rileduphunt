@@ -13,7 +13,7 @@
 """This is the game!"""
 
 import pygame
-from ponggame.scene import Scene, TitleScene, GameScene
+from ponggame.scene import Scene, TitleScene, GameScene, RetryScene
 from ponggame import colors
 
 
@@ -48,19 +48,19 @@ class Game:
     def build_scenegraph(self):
         self._scene_graph = {
             'title': ['game'],
-            'game': ['leaderboard', 'name_entry', 'game'],
-            'name_entry': ['leaderboard'],
-            'leaderboard': ['quit', 'title'],
+            'game': ['retry'],
+            'retry': ['game', 'quit'],
         }
         scenes = {
             TitleScene(self._screen, colors.RED, title="A title"): 'title',
-            GameScene(self._screen, colors.BLUE, soundtrack='sounds/interstellar-hero-02.wav'): 'game',
-            TitleScene(
+            GameScene(
+                self._screen,
+                colors.BLUE,
+                soundtrack='sounds/interstellar-hero-02.wav'
+            ): 'game',
+            RetryScene(
                 self._screen, colors.RED, title="Name Entry"
             ): 'name_entry',
-            TitleScene(
-                self._screen, colors.RED, title="Leaderboard"
-            ): 'leaderboard',
             None: 'quit',
         }
         self._scenes = {}
