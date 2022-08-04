@@ -50,7 +50,7 @@ class Scene:
     @property
     def result(self):
         """Return the index indicating the next scene."""
-        return 0
+        return self._result
 
     @property
     def is_valid(self) -> bool:
@@ -70,7 +70,9 @@ class Scene:
         """Updates the game based on the time delta."""
         pass
 
-    def invalidate(self):
+    def invalidate(self, result=None):
+        if result is not None:
+            self._result = result
         self._is_valid = False
 
     def handle_event(self, event):
