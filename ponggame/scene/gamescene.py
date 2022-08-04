@@ -18,7 +18,7 @@ import ponggame
 from ponggame.scene.scene import Scene
 from pygame import Rect, Surface, Vector2
 from pygame.event import Event
-from ponggame.entity import Ball, Goal, Paddle, TextDisplay, Wall
+from ponggame.entity import AIPaddle, Ball, Goal, Paddle, TextDisplay, Wall
 from typing import Dict, List
 import pygame
 from pygame.constants import KEYDOWN, K_ESCAPE, K_MINUS, USEREVENT
@@ -40,8 +40,18 @@ class GameScene(Scene):
         self._opponent_score = 0
         self._entities['ball'] = Ball((w/2, h/2), colors.WHITE)
         ball = self._entities['ball']
-        self._entities['topwall'] = Wall(Rect(0, 0, w, 10))
-        self._entities['bottomwall'] = Wall(Rect(0, 790, w, 10))
+        self._entities['topwall'] = Wall(Rect(
+            0 - goal_width,
+            0 - 10,
+            w + 2 * goal_width,
+            20
+        ))
+        self._entities['bottomwall'] = Wall(Rect(
+            0 - goal_width,
+            h - 10,
+            w + 2 * goal_width,
+            20
+        ))
         self._entities['player_goal'] = Goal(
             Rect(0 - goal_offset, -h, goal_width, h * 3)
         )
@@ -49,7 +59,7 @@ class GameScene(Scene):
             Rect(w + goal_offset, -h, goal_width, h * 3)
         )
         self._entities['player_paddle'] = Paddle((30, h / 2))
-        self._entities['opponent_paddle'] = Paddle((w-30, h / 2))
+        self._entities['opponent_paddle'] = AIPaddle((w-30, h / 2))
         font = Font(pygame.font.get_default_font(), 35)
 
         self._entities['player_score'] = TextDisplay(
@@ -64,28 +74,16 @@ class GameScene(Scene):
         )
 
         def paddle_move(event: Event):
-            if event.key == pygame.K_UP:
-                self._entities['player_paddle']._acceleration.y = -1/60
-            elif event.key == pygame.K_DOWN:
-                self._entities['player_paddle']._acceleration.y += 1/60
-            elif event.key == pygame.K_w:
-                self._entities['player_paddle']._acceleration.y = -1/60
-            elif event.key == pygame.K_s:
-                self._entities['player_paddle']._acceleration.y = 1/60
+            if event.key == pygame.K_UP or event.key == pygame.K_w:
+                self._entities['player_paddle'].move_up()
+            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                self._entities['player_paddle'].move_down()
 
         def paddle_stop(event: Event):
-            if event.key == pygame.K_UP:
-                self._entities['player_paddle']._velocity.y *= 0
-                self._entities['player_paddle']._acceleration *= 0
-            elif event.key == pygame.K_DOWN:
-                self._entities['player_paddle']._velocity.y *= 0
-                self._entities['player_paddle']._acceleration *= 0
-            elif event.key == pygame.K_w:
-                self._entities['player_paddle']._velocity.y *= 0
-                self._entities['player_paddle']._acceleration *= 0
-            elif event.key == pygame.K_s:
-                self._entities['player_paddle']._velocity.y *= 0
-                self._entities['player_paddle']._acceleration *= 0
+            if event.key == pygame.K_UP or event.key == pygame.K_w:
+                self._entities['player_paddle'].stop()
+            elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
+                self._entities['player_paddle'].stop()
 
         def restart(event: Event):
             ball.reset()
@@ -149,5 +147,7 @@ class GameScene(Scene):
     def start(self):
         super().start()
         self._entities['ball'].start_timer()
+        self._entities['player_score'].text = "0"
+        self._entities['opponent_score'].text = "0"
         self._player_score = 0
         self._opponent_score = 0
